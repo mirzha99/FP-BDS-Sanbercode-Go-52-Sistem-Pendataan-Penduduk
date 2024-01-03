@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -19,12 +18,17 @@ func Index(ctx *gin.Context) {
 		return
 	}
 	var user []Muser.User
-	config.DB.Select("id, nama, email, username, email, created_at,change_at").Find(&user)
-	for i, _ := range user {
+
+	config.DB.Select("id, nama, email, username, email, role, created_at, change_at").Find(&user)
+	if len(user) == 0 {
+		ctx.JSON(404, gin.H{"Message": "Data User Is Empty"})
+		return
+	}
+	for i := range user {
 		created_at, _ := strconv.Atoi(user[i].Created_at)
 		change_at, _ := strconv.Atoi(user[i].Change_at)
-		created := timegoza.ZaTimes{Epoch: int64(created_at)}
-		change := timegoza.ZaTimes{Epoch: int64(change_at)}
+		created := timegoza.ZaTimes{Epoch: int64(created_at), TimeZone: "Asia/Jakarta"}
+		change := timegoza.ZaTimes{Epoch: int64(change_at), TimeZone: "Asia/Jakarta"}
 		user[i].Created_at = created.HumanTime()
 		user[i].Change_at = change.HumanTime()
 	}
@@ -66,7 +70,6 @@ func Add(ctx *gin.Context) {
 		return
 	}
 	var user Muser.User
-	fmt.Println("Password :", user)
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -87,11 +90,12 @@ func Add(ctx *gin.Context) {
 	user.Password = string(hash)
 	user.Created_at = strconv.Itoa(int(timegoza.EpochTime()))
 	user.Change_at = strconv.Itoa(int(timegoza.EpochTime()))
+	user.Role = "Staff"
 	result := config.DB.Create(&user)
 	if result.Error != nil {
 		ctx.JSON(400, gin.H{"message": "User created Failed", "user": user})
 	} else {
-		ctx.JSON(201, gin.H{"message": "User created successfully", "user": user})
+		ctx.JSON(201, gin.H{"message": "User created successfully", "user": user.PublicUser()})
 	}
 
 }
@@ -101,6 +105,22 @@ func Edit(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
+	var user Muser.User
+	id := ctx.Param("id")
+	if err := config.DB.Where("id = ?", id).First(&user).Error; err != nil {
+		ctx.JSON(404, gin.H{"error": "User not found"})
+		return
+	}
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	row := config.DB.Save(&user)
+	if row.RowsAffected == 0 {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "User update failed"})
+		return
+	}
+	ctx.JSON(200, gin.H{"message": "User Successly Update", "user": user})
 }
 func Delete(ctx *gin.Context) {
 	if !config.Limiter.Allow() {

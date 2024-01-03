@@ -12,6 +12,10 @@ type User struct {
 	Created_at string `gorm:"type:varchar(30);column:created_at" json:"created_at"`
 	Change_at  string `gorm:"type:varchar(30);column:change_at" json:"change_at"`
 }
+type LoginInput struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
 
 func (u *User) PublicUser() gin.H {
 	return gin.H{
