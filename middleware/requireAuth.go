@@ -33,7 +33,6 @@ func ReqAuth(ctx *gin.Context) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		//check exp
 		exp := claims["exp"].(float64)
-		fmt.Println("exp :", exp)
 		if float64(time.Now().Unix()) > exp {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 		}

@@ -12,6 +12,28 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// SuccessResponse adalah struktur respons sukses
+type SuccessResponse struct {
+	Message string `json:"message"`
+	Token   string `json:"token"`
+}
+
+// ErrorResponse adalah struktur respons kesalahan
+type ErrorResponse struct {
+	Error  string `json:"error"`
+	Detail string `json:"detail"`
+}
+
+// Login godoc
+// @Summary Login pengguna
+// @Description Melakukan login pengguna dan mengembalikan token otentikasi
+// @Accept json
+// @Produce json
+
+// @Param loginInput body Muser.LoginInput true "User login credentials"
+// @Success 200 {object} SuccessResponse "Sukses"
+
+// @Router /login [post]
 func Login(ctx *gin.Context) {
 	var loginInput Muser.LoginInput
 	var user Muser.User
@@ -44,7 +66,10 @@ func Login(ctx *gin.Context) {
 	//json
 	ctx.SetSameSite(http.SameSiteLaxMode)
 	ctx.SetCookie("jwt-token", tokenResult, 3600*24*30, "", "", false, true)
-	ctx.JSON(200, gin.H{"message": "Welcome " + user.Nama, "token": tokenResult})
+	ctx.JSON(200, SuccessResponse{
+		Message: "Welcome " + user.Nama,
+		Token:   tokenResult,
+	})
 
 }
 func Profil(ctx *gin.Context) {

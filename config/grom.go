@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mirzha99/FP-BDS-Sanbercode-Go-52-Sistem-Pendataan-Penduduk/models/Mdesa"
+	"github.com/mirzha99/FP-BDS-Sanbercode-Go-52-Sistem-Pendataan-Penduduk/models/Mmukim"
 	"github.com/mirzha99/FP-BDS-Sanbercode-Go-52-Sistem-Pendataan-Penduduk/models/Muser"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -24,6 +26,6 @@ func ConnectionDB() {
 	if err != nil {
 		panic(err)
 	}
-	db.AutoMigrate(&Muser.User{})
+	db.AutoMigrate(&Muser.User{}, &Mmukim.Mukim{}, &Mdesa.Desa{})
 	DB = db
 }

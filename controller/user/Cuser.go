@@ -94,6 +94,7 @@ func Add(ctx *gin.Context) {
 	result := config.DB.Create(&user)
 	if result.Error != nil {
 		ctx.JSON(400, gin.H{"message": "User created Failed", "user": user})
+		return
 	} else {
 		ctx.JSON(201, gin.H{"message": "User created successfully", "user": user.PublicUser()})
 	}
